@@ -9,14 +9,14 @@ Vue.use(Router)
 /**
  * 自动生成路由部分
  */
-import RouteGenerator from "./router_ea/index";
-let routes = new RouteGenerator(require.context('../views', true, /\.vue$/)).generate();
-
-console.log(routes)
+import RouteGenerator from 'gz-vue-router'
 
 const router = new Router({
-    routes
+    routes: [
+        ...new RouteGenerator(require.context('../views', true, /\.vue$/)).generate()
+    ]
 })
+console.log(router)
 
 export default router
 

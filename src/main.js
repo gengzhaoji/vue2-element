@@ -11,9 +11,6 @@ import 'babel-polyfill'
 // 按需加载ui
 import './helper/ui'
 
-// 应用样式
-import './style/index.scss'
-
 //公用组件
 import './helper/commonPage'
 
@@ -35,14 +32,9 @@ import guarder from './helper/guarder'
 // 引入插件
 import plugin from './utils/plugin'
 
-//使用混入属性
-import Mixin from './helper/mixins'
-
 // 注册路由守卫
 guarder(router)
 
-// 使用混入属性
-Vue.mixin(Mixin)
 
 // 使用自定义功能插件
 Vue.use(plugin)
