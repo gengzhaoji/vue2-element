@@ -13,7 +13,7 @@ import RouteGenerator from 'gz-vue-router'
 
 const router = new Router({
     routes: [
-        ...new RouteGenerator(require.context('../views', true, /\.vue$/)).generate()
+        ...new RouteGenerator(require.context('@/views', true, /\.vue$/)).generate()
     ]
 })
 console.log(router)

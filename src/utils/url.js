@@ -1,7 +1,7 @@
 /**
  * Url操作模块
  * @module utils/url
- * @author 陈华春
+ * @author 耿朝继
  */
 
 import pathToRegex from 'path-to-regexp'

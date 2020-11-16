@@ -160,14 +160,10 @@ export default {
           ...this.$props
         },
         style: {
-          border: 'none'
+          border: "none"
         },
-        attrs: {
-          ...this.$attrs
-        },
-        on: {
-          ...this.$listeners
-        },
+        attrs: this.$attrs,
+        on: this.$listeners,
         ref: "menu"
       },
       this.createNodes(h, this.data)

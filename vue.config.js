@@ -1,3 +1,5 @@
+const path = require('path')
+
 module.exports = {
   // 基本路径
   publicPath: '/',
@@ -22,25 +24,20 @@ module.exports = {
   },
   // webpack-dev-server 相关配置
   devServer: {
-    open: process.platform === 'darwin',
-    host: '0.0.0.0',
     port: 5000,
-    https: false,
-    hotOnly: false,
-    // proxy: {// 设置代理
-    //   '/api': {
-    //     target: 'http://127.0.0.1:3000/',
-    //     changeOrigin: false
-    //   }
-    // },
+    proxy: {// 设置代理
+      '/*': {
+        target: 'http://139.159.135.224:9999/',
+        changeORigin: true
+      }
+    },
     before: app => { }
   },
   // 第三方插件配置
   pluginOptions: {
-    // 自动引入样式插件
     'style-resources-loader': {
       preProcessor: 'scss',
-      patterns: [path.resolve(__dirname, 'src/style/index.scss')]
+      patterns: [path.resolve(__dirname, './src/style/index.scss')]
     }
   }
 }

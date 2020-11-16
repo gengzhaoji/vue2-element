@@ -1,63 +1,64 @@
 <template>
-    <div class="layout">
-        <el-container>
-            <!--头部-->
-            <el-header>
-                <el-dropdown>
-                    <i
-                        class="el-icon-setting"
-                        style="margin-right: 15px"
-                    ></i>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>查看</el-dropdown-item>
-                        <el-dropdown-item>新增</el-dropdown-item>
-                        <el-dropdown-item>删除</el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
-                <span>王小虎</span>
-            </el-header>
-            <!--中部-->
-            <el-container>
-                <!--菜单栏-->
-                <el-aside
-                    :width='aside_width'
-                    style="transition: all 0.2s;"
-                >
-                    <div
-                        class="btn"
-                        @click="collapse = !collapse"
-                    >
-                        <i :class="[collapse?'el-icon-s-fold':'el-icon-s-unfold']"></i>
-                    </div>
-                    <xdh-menu
-                        :data="menus"
-                        :collapse="collapse"
-                        :default-active="$route.path"
-                        @select="navSelect"
-                        :collapse-transition="false"
-                        background-color="#1b82c7"
-                        text-color="#fff"
-                        active-text-color="#ffd04b"
-                    ></xdh-menu>
-                </el-aside>
-                <!--内容区-->
-                <el-main>
-                    <transition name="el-zoom-in-top">
-                        <keep-alive>
-                            <router-view v-if="$route.meta.keepAlive"></router-view>
-                        </keep-alive>
-                    </transition>
-                    <transition name="el-zoom-in-top">
-                        <router-view v-if="!$route.meta.keepAlive"></router-view>
-                    </transition>
-                </el-main>
-            </el-container>
-        </el-container>
-    </div>
+  <div class="layout">
+    <el-container>
+      <!--头部-->
+      <el-header>
+        <el-dropdown>
+          <i
+            class="el-icon-setting"
+            style="margin-right: 15px"
+          ></i>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item>查看</el-dropdown-item>
+            <el-dropdown-item>新增</el-dropdown-item>
+            <el-dropdown-item>删除</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <span>王小虎</span>
+      </el-header>
+      <!--中部-->
+      <el-container>
+        <!--菜单栏-->
+        <el-aside
+          :width='aside_width'
+          style="transition: all 0.2s;"
+        >
+          <div
+            class="btn"
+            @click="collapse = !collapse"
+          >
+            <i :class="[collapse?'el-icon-s-fold':'el-icon-s-unfold']"></i>
+          </div>
+          <xdh-menu
+            :data="menus"
+            :collapse="collapse"
+            :default-active="$route.path"
+            @select="navSelect"
+            :collapse-transition="false"
+            background-color="#1b82c7"
+            text-color="#fff"
+            active-text-color="#ffd04b"
+          ></xdh-menu>
+        </el-aside>
+        <!--内容区-->
+        <el-main>
+          <transition name="el-zoom-in-top">
+            <keep-alive>
+              <router-view v-if="$route.meta.keepAlive"></router-view>
+            </keep-alive>
+          </transition>
+          <transition name="el-zoom-in-top">
+            <router-view v-if="!$route.meta.keepAlive"></router-view>
+          </transition>
+        </el-main>
+      </el-container>
+    </el-container>
+  </div>
 </template>
  
 <script>
 import XdhMenu from "@/components/xdh-menu/xdh-menu.vue";
+
 export default {
   name: "layout",
   components: {

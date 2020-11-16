@@ -11,11 +11,11 @@ import 'babel-polyfill'
 // 按需加载ui
 import './helper/ui'
 
+// 应用样式
+import './style/index.scss'
+
 //公用组件
 import './helper/commonPage'
-
-// 全局http请求拦截
-import './helper/interceptor'
 
 // 根组件
 import App from './App.vue'
@@ -34,7 +34,6 @@ import plugin from './utils/plugin'
 
 // 注册路由守卫
 guarder(router)
-
 
 // 使用自定义功能插件
 Vue.use(plugin)

@@ -1,20 +1,25 @@
 <template>
-    <div class="main">
-        <xdh-table
-            :data="tableData"
-            :columns="columns"
-            stripe
-            v-loading="loading"
-            border
-            size="small"
-        ></xdh-table>
-    </div>
+  <div class="index">
+    <xdh-table
+      :data="tableData"
+      :columns="columns"
+      stripe
+      v-loading="loading"
+      border
+      size="small"
+    ></xdh-table>
+  </div>
 </template>
  
 <script>
 import XdhTable from "@/components/xdh-table/xdh-table.vue";
+/**
+ * 接口部分
+ */
+import { checkStatus } from "@/api";
+
 export default {
-  name: "main",
+  name: "index",
   components: {
     XdhTable
   },
@@ -61,12 +66,28 @@ export default {
         }
       ]
     };
-  }
+  },
+  methods: {
+    checkStatus(keyword) {
+      checkStatus({ keyword: keyword })
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
+  },
+  mounted() {
+    this.checkStatus("gp_config_etl_monitor_pic");
+    this.checkStatus("gp_config_etl_monitor");
+  },
+  created() {}
 };
 </script>
  
 <style scoped lang = "scss">
-.main {
+.index {
   height: 100%;
   display: flex;
   flex-direction: column;
