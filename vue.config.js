@@ -38,10 +38,5 @@ module.exports = {
     before: app => { }
   },
   // 第三方插件配置
-  pluginOptions: {
-    // 'style-resources-loader': {
-    //   preProcessor: 'scss',
-    //   patterns: [path.resolve(__dirname, './src/style/index.scss')]
-    // }
-  }
+  pluginOptions: {}
 }
