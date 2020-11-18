@@ -18,7 +18,11 @@ module.exports = {
     // 开启 CSS source maps?
     sourceMap: false,
     // css预设器配置项
-    loaderOptions: {},
+    loaderOptions: {
+      sass: {
+        prependData: `@import '@/style/index.scss';`
+      }
+    },
     // 启用 CSS modules for all css / pre-processor files.
     modules: false
   },
@@ -35,9 +39,9 @@ module.exports = {
   },
   // 第三方插件配置
   pluginOptions: {
-    'style-resources-loader': {
-      preProcessor: 'scss',
-      patterns: [path.resolve(__dirname, './src/style/index.scss')]
-    }
+    // 'style-resources-loader': {
+    //   preProcessor: 'scss',
+    //   patterns: [path.resolve(__dirname, './src/style/index.scss')]
+    // }
   }
 }
