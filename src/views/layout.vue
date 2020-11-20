@@ -2,19 +2,21 @@
   <div class="layout">
     <el-container>
       <!--头部-->
-      <el-header>
-        <el-dropdown>
-          <i
-            class="el-icon-setting"
-            style="margin-right: 15px"
-          ></i>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>查看</el-dropdown-item>
-            <el-dropdown-item>新增</el-dropdown-item>
-            <el-dropdown-item>删除</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-        <span>王小虎</span>
+      <el-header class="header">
+        <div class="pull-right padding-right-10">
+          <el-dropdown>
+            <i
+              class="el-icon-setting"
+              style="margin-right: 15px color: #fff;"
+            ></i>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>查看</el-dropdown-item>
+              <el-dropdown-item>新增</el-dropdown-item>
+              <el-dropdown-item>删除</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          <span>王小虎</span>
+        </div>
       </el-header>
       <!--中部-->
       <el-container>
@@ -57,12 +59,10 @@
 </template>
  
 <script>
-import XdhMenu from "@/components/xdh-menu/xdh-menu.vue";
-
 export default {
   name: "layout",
   components: {
-    XdhMenu
+    XdhMenu: () => import("@/components/xdh-menu/xdh-menu.vue")
   },
   data() {
     return {
@@ -79,22 +79,6 @@ export default {
           text: "测试页面",
           icon: "el-icon-tickets",
           path: "/ceshi"
-        },
-        {
-          text: "导航一",
-          icon: "el-icon-tickets",
-          children: [
-            {
-              id: "/",
-              text: "首页",
-              path: "/"
-            },
-            {
-              id: "/ceshi",
-              text: "测试页面",
-              path: "/ceshi"
-            }
-          ]
         }
       ],
       collapse: false
@@ -123,6 +107,14 @@ $--color-background: rgba(142, 207, 249, 0.72);
   height: 100%;
   width: 100%;
   display: flex;
+  .header {
+    background-color: #1b82c7;
+    line-height: 60px;
+    height: 60px;
+    pull-right {
+      color: #fff
+    }
+  }
   .el-aside {
     background-color: #1b82c7;
     .btn {
@@ -167,7 +159,7 @@ $--color-background: rgba(142, 207, 249, 0.72);
   }
 }
 </style>
-<style lang="scss">
+<style scoped lang="scss">
 $--color-background: rgba(142, 207, 249, 0.72);
 .el-menu-item {
   color: #fff;

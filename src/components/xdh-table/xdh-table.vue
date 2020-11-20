@@ -323,11 +323,8 @@ export default {
 </script>
 
 <style lang="scss">
-@import "../../style/vars";
-
 .xdh-table {
   .sortable-ghost {
-    background: $--color-warning-light;
     opacity: 0.3;
   }
   .sortable-ghost.xdh-table--not-drag {

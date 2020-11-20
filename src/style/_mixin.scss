@@ -73,16 +73,3 @@
   vertical-align: top;
 }
 
-// 虚线树组件 的 自定义indent（缩进）样式调整
-@mixin tree-indent( $indent) {
-  .el-tree {
-    div[role=group]{
-      .el-tree-node__expand-icon::after {
-        content: '';
-        width: $indent - 6px;//calc(12px + 48px - 18px);
-        left: $indent * -1 + 12px; //calc( 48px * -1 + 12px );
-      }
-    }
-  }
-}
-
