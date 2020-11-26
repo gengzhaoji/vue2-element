@@ -1,5 +1,7 @@
 const path = require('path')
-
+function resolve(dir) {
+  return path.join(__dirname, dir)
+}
 module.exports = {
   // 基本路径
   publicPath: '/',
@@ -25,6 +27,13 @@ module.exports = {
     },
     // 启用 CSS modules for all css / pre-processor files.
     modules: false
+  },
+   chainWebpack: c => {
+    config.resolve.alias
+      .set('@', resolve('src'))
+      .set('@api', resolve('src/api'))
+      .set('@com', resolve('src/components'))
+      .set('@untils', resolve('src/utils'))
   },
   // webpack-dev-server 相关配置
   devServer: {
