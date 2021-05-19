@@ -1,7 +1,6 @@
 /**
  * 数据转换工具函数模块
  * @module utils/convert
- * @author 陈华春
  */
 
 /**
@@ -9,12 +8,13 @@
  * @param {Object[]} list 列表数组数据
  * @param {String|Number} parentId 根节点的父节点id标识
  * @param {Number} [level=0] 指定第一层级别的索引，可选，默认值：0
- * @param {Object} [map={id:'id' ,parentId:'parentId', children:'children', level:'level', order:'order'}] 属性映射, 可选
+ * @param {Object} [map={id:'id' ,parentId:'parentId', children:'children', level:'level', order:'order',path: 'path'}] 属性映射, 可选
  * @param {String} map.id 节点标识
  * @param {String} map.parentId 父节点标识
  * @param {Object[]} map.children 子节点数组
  * @param {Number} map.level 层级索引
  * @param {Number} map.order 排序标识
+ * @param {Number} map.path 层级id数组
  * @returns {Object[]} 树结构数组
  *
  * @example
@@ -56,7 +56,10 @@ export function listToTree(list, parentId, level = 0, map) {
     if (pId === parentId) {
       item[prop.level] = level
       item[prop.path] = [item[prop.id]]
-      tree.push(item)
+      tree.push(item);
+      tree.sort((a, b) => {
+        return a[prop.order] - b[prop.order]
+      })
     } else {
       const parent = temp[pId]
       if (parent) {
@@ -68,17 +71,19 @@ export function listToTree(list, parentId, level = 0, map) {
         item[prop.level] = parent[prop.level] + 1
         item[prop.path] = path
         parent[prop.children].push(item)
+        parent[prop.children].sort((a, b) => {
+          return a[prop.order] - b[prop.order]
+        })
       }
     }
   }
   return tree
-
 }
 
 /**
  * 简单 列表转换树结构
  * @param {Object[]} list 列表数据，约定字段名称： id/parentId/children
- * @param {*} [parentId=null] 父节点的值
+ * @param {*} [parentId=null] 根节点的值
  * @param {string} [idKey=id] id字段名称
  * @param {string} [parentIdKey=parentId] parentId字段名称
  * @return {Array}
@@ -88,7 +93,6 @@ export function buildTree(list = [], parentId = null, idKey = 'id', parentIdKey 
   list.forEach(item => {
     temp[item[idKey]] = { ...item }
   })
-
   for (let key in temp) {
     const item = temp[key]
     if (item[parentIdKey] === parentId) {
@@ -103,55 +107,45 @@ export function buildTree(list = [], parentId = null, idKey = 'id', parentIdKey 
       }
     }
   }
-
   return tree
 }
 
 /**
- * 列表数据转换成表格数结构（不建议再使用），请使用 [listToTree]{@link module:utils/convert.listToTree}
- * @deprecated
- * @param {Object[]} list 列表数组数据
- * @param {String|Number} parentId 根节点的父节点id标识
- * @param {Number} [level=0] 指定第一层级别的索引，可选，默认值：0
- * @param {Object} [prop={id:'id' ,parentId:'parentId', children:'children', level:'level', order:'order'}] 属性映射, 可选
- * @param {String} prop.id 节点标识
- * @param {String} prop.parentId 父节点标识
- * @param {Object[]} prop.children 子节点数组
- * @param {Number} prop.level 层级索引
- * @param {Number} prop.order 排序标识
- * @returns {Object[]} 树结构数组
- * @see [utils/convert.listToTree]{@link module:utils/convert.listToTree}
+ * 树形结构数据转一维数组
+ * @param {*} [] tree 树形结构数组
+ * @param {*} field 子节点数组标识
  */
-export function listToTableTree(list, parentId, level = 0, prop = {
-  id: 'id',
-  parentId: 'parentId',
-  children: 'children',
-  level: 'level',
-  order: 'order'
-}, idPath) {
-  let temp, result = []
-  if (!list || list.length === 0) {
-    return result
-  }
-  list.forEach(item => {
-    if (item[prop.parentId] === parentId) {
-      let obj = Object.assign({}, item)
-      obj[prop.level] = level
-      obj.idPath = (idPath || '') + '_' + item[prop.id]
-      result.push(obj)
-      temp = listToTableTree(list, obj[prop.id], level + 1, prop, obj.idPath)
-      if (temp.length > 0) {
-        result = result.concat(temp)
-      }
+export function treeToArray(tree = [], field = 'children') {
+  let result = [];
+  tree.forEach(item => {
+    let itemCopy = JSON.parse(JSON.stringify(item));
+    result.push(itemCopy);
+    if (itemCopy[field]) {
+      result.push(...treeToArray(itemCopy[field], field))
+      delete itemCopy[field];
     }
   })
-  return result.sort((a, b) => {
-    return a[prop.order] - b[prop.order]
-  })
+  return result;
 }
 
 /**
- * 深度拷贝对象或数组，采用JSON.parse 和 JSON.stringify 实现, 相同功能的方法 [deepCop]{@link module:utils/convert.deepCopy}
+ * 对象数组的去重函数  依照某个 id去重
+ * @param {Object[]} list 对象数组
+ * @param {string} [idKey=id] id字段名称
+ */
+export function duplicateArr(list = [], idKey = 'id') {
+  let obj = {}, Arr = [];
+  list.forEach(item => {
+    if (!obj[item[idKey]]) {
+      Arr.push(item);
+      obj[item[idKey]] = item;
+    }
+  })
+  return Arr;
+}
+
+/**
+ * 深度拷贝对象或数组，采用JSON.parse 和 JSON.stringify 实现, 相同功能的方法 [cloneDeep]{@link module:utils/convert.cloneDeep}
  * @param {Object|Array} obj 要拷贝的对象或数组
  * @returns {Object|Array} 拷贝后的对象副本
  */
@@ -176,7 +170,8 @@ export function typeOf(obj) {
     '[object RegExp]': 'regExp',
     '[object Undefined]': 'undefined',
     '[object Null]': 'null',
-    '[object Object]': 'object'
+    '[object Object]': 'object',
+    '[object Promise]': 'Promise'
   }
   return map[toString.call(obj)]
 }
@@ -187,7 +182,7 @@ export function typeOf(obj) {
  * @returns {*} 拷贝后的数据副本
  * @see [clone]{@link module:utils/convert.clone}
  */
-export function deepCopy(data) {
+export function cloneDeep(data) {
   const t = typeOf(data)
   let o
 
@@ -201,11 +196,11 @@ export function deepCopy(data) {
 
   if (t === 'array') {
     for (let i = 0; i < data.length; i++) {
-      o.push(deepCopy(data[i]))
+      o.push(cloneDeep(data[i]))
     }
   } else if (t === 'object') {
     for (let i in data) {
-      o[i] = deepCopy(data[i])
+      o[i] = cloneDeep(data[i])
     }
   }
   return o

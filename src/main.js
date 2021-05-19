@@ -11,9 +11,6 @@ import 'babel-polyfill'
 // 按需加载ui
 import './helper/ui'
 
-// 应用样式
-import './style/index.scss'
-
 //公用组件
 import './helper/commonPage'
 
@@ -29,19 +26,24 @@ import store from './store'
 // 注入路由守卫
 import guarder from './helper/guarder'
 
-// 引入插件
+// 引入字体图标
+import './assets/icon/style.css'
+
+// 引入特殊字体
+import './assets/title/index.css'
+
+// 引入全局资源
 import plugin from './utils/plugin'
+Vue.use(plugin)
 
 // 注册路由守卫
 guarder(router)
 
-// 使用自定义功能插件
-Vue.use(plugin)
-
 Vue.config.productionTip = false
 
 new Vue({
+  el: '#app',
   router,
   store,
   render: h => h(App)
-}).$mount('#app')
+})

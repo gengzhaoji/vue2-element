@@ -61,7 +61,7 @@ export function has(sKey) {
  * @returns {boolean}
  */
 export function remove(sKey, sPath, sDomain) {
-  if (!sKey || !this.has(sKey)) return false;
+  if (!sKey || !has(sKey)) return false;
   document.cookie = encodeURIComponent(sKey) + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT' + (sDomain ? '; domain=' + sDomain : '') + (sPath ? '; path=' + sPath : '');
   return true;
 }

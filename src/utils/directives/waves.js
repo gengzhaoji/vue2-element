@@ -1,3 +1,7 @@
+/**
+ * 点击出现水波纹效果
+ * @module utils/directives/waves
+ */
 export default {
   bind(el, binding) {
     el.addEventListener('click', e => {
@@ -12,14 +16,14 @@ export default {
         target.style.position = 'relative'
         target.style.overflow = 'hidden'
         const rect = target.getBoundingClientRect()
-        let ripple = target.querySelector('.xdh-waves-ripple')
+        let ripple = target.querySelector('.waves-ripple')
         if (!ripple) {
           ripple = document.createElement('span')
-          ripple.className = 'xdh-waves-ripple'
+          ripple.className = 'waves-ripple'
           ripple.style.height = ripple.style.width = Math.max(rect.width, rect.height) + 'px'
           target.appendChild(ripple)
         } else {
-          ripple.className = 'xdh-waves-ripple'
+          ripple.className = 'waves-ripple'
         }
         switch (opts.type) {
           case 'center':
@@ -31,7 +35,7 @@ export default {
             ripple.style.left = (e.pageX - rect.left - ripple.offsetWidth / 2 - document.documentElement.scrollLeft || document.body.scrollLeft) + 'px'
         }
         ripple.style.backgroundColor = opts.color
-        ripple.className = 'xdh-waves-ripple xdh-waves-ripple__active'
+        ripple.className = 'waves-ripple waves-ripple__active'
         return false
       }
     }, false)

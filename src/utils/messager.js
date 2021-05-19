@@ -1,7 +1,7 @@
 /**
  * 跨域页面消息通信
  * @module utils/messager
- * @author 陈华春
+ * @author 耿朝继
  */
 
 import {save, LOCAL} from './storage'

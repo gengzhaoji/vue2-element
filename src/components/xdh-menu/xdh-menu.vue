@@ -31,7 +31,8 @@ export default {
           icon: "icon",
           children: "children",
           group: "group",
-          route: "route"
+          route: "route",
+          img: "img"
         };
       }
     }
@@ -54,18 +55,37 @@ export default {
       return groups;
     },
     createTitle(h, item) {
-      return [
-        h("i", {
-          class: item[this.props.icon]
-        }),
-        h(
-          "span",
-          {
-            slot: "title"
-          },
-          item[this.props.text]
-        )
-      ];
+      if (item.img) {
+        return [
+          h("img", {
+            attrs: {
+              src: item[this.props.img],
+              class: "el-icon-g-img",
+              alt: ""
+            }
+          }),
+          h(
+            "span",
+            {
+              slot: "title"
+            },
+            item[this.props.text]
+          )
+        ];
+      } else {
+        return [
+          h("i", {
+            class: `el-icon-g ${item[this.props.icon]}`
+          }),
+          h(
+            "span",
+            {
+              slot: "title"
+            },
+            item[this.props.text]
+          )
+        ];
+      }
     },
     createItem(h, item) {
       const key = (item[this.props.id] || "").toString();

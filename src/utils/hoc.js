@@ -22,7 +22,7 @@ export default function (Component, options = {}) {
           vnode.context = this._self
           return vnode
         })
-      
+
       return h(Component, {
         on: this.$listeners,
         props: this.$props,

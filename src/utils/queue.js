@@ -1,7 +1,6 @@
 /**
  * 队列任务处理模块，可以用来处理依次执行的操作
  * @module utils/queue
- * @author 陈华春
  */
 import Events from './events'
 
@@ -48,14 +47,14 @@ class Queue extends Events {
      * @type {boolean}
      */
     this.running = false
-    
+
     /**
      * 任务处理函数，函数返回值必须是Promise实例
      * @type {Function}
      */
     this.task = task || taskFunc
   }
-  
+
   /**
    * 在队列中加入需要处理的任务数据，如果
    * @param {*} data 任务数据
@@ -66,7 +65,7 @@ class Queue extends Events {
     this.run()
     return this
   }
-  
+
   /**
    *  执行队列处理
    */
@@ -103,7 +102,7 @@ class Queue extends Events {
       this.$emit('error', e, data)
     })
   }
-  
+
   /**
    * 清空队列任务
    */
@@ -111,7 +110,7 @@ class Queue extends Events {
     this.__list__ = []
     this.waiting = false
   }
-  
+
   /**
    * 开始运行队列处理任务
    * @returns {Queue}
@@ -121,7 +120,7 @@ class Queue extends Events {
     this.run()
     return this
   }
-  
+
   /**
    * 停止队列处理任务
    * @returns {Queue}
@@ -130,7 +129,7 @@ class Queue extends Events {
     this.running = false
     return this
   }
-  
+
   /**
    * 销毁
    */

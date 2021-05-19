@@ -8,19 +8,32 @@ body {
   height: 100%;
   -webkit-text-size-adjust: none;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.5em;
-  font-family: Arial, Helvetica, sans-serif, Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
   background: #fff;
   color: #303133;
+  min-width: 1024px;
+}
+
+body:after {
+  content: "";
+  position: fixed;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  -webkit-box-shadow: 0px 0px 10px rgba(0, 0, 0, .8);
+  -moz-box-shadow: 0px 0px 10px rgba(0, 0, 0, .8);
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, .8);
+  z-index: 100;
 }
 
 .app-init {
   height: 100%;
-}
-
-.el-button .iconfont {
-  font-size: inherit;
 }
 
 /* common */
@@ -42,7 +55,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  position: relative;
+  position: absolute;
 }
 
 .pointer {
@@ -62,6 +75,8 @@ body {
   display: flex;
   align-content: center;
   justify-content: center;
+  align-items: center;
+  justify-items: center;
 }
 
 .flex-row {
@@ -200,6 +215,13 @@ body {
   display: inline-block;
 }
 
+.fr {
+  float: right;
+}
+
+.fl {
+  float: left;
+}
 
 /** 文字显示与隐藏 */
 
@@ -218,12 +240,21 @@ body {
   -webkit-line-clamp: 0;
 }
 
-.font-weight {
-  font-weight: bold;
-}
-
 .text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.tr {
+  text-align: right;
+}
+
+.tc {
+  text-align: center;
+}
+
+.pre {
+  white-space: pre-wrap;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\5FAE\8F6F\96C5\9ED1", Arial, sans-serif;
 }

@@ -1,10 +1,10 @@
-const _isEqual = require('lodash/isEqual')
-
 /**
  * 常用辅助函数
  * @module utils/util
  */
 
+
+import _isEqual from 'lodash/isEqual'
 /**
  * 判断两个对象是否相等
  * @param {*} object
@@ -26,22 +26,22 @@ export function isEqual(object, other) {
 export function debounce(fn, delay = 20, isImmediate = false, context = this) {
   // 使用闭包，保存执行状态，控制函数调用顺序
   let timer;
-  
+
   return function () {
     const _args = [].slice.call(arguments)
-    
+
     clearTimeout(timer);
-    
+
     const _fn = function () {
       timer = null;
       if (!isImmediate) fn.apply(context, _args);
     };
-    
+
     // 是否滚动时立刻执行
     const callNow = !timer && isImmediate;
-    
+
     timer = setTimeout(_fn, delay);
-    
+
     if (callNow) fn.apply(context, _args);
   }
 }
@@ -78,81 +78,17 @@ export function throttle(fn, context = this, isImmediate = false) {
   let isLocked;
   return function () {
     const _args = arguments
-    
+
     if (isLocked) return
-    
+
     isLocked = true
     raFrame(function () {
       isLocked = false;
       fn.apply(context, _args)
     })
-    
+
     isImmediate && fn.apply(context, _args)
   }
-}
-
-/**
- * 遍历树数据节点，查找符合条件的节点
- * @param {Array|Object} data 数据树，如 {id:1, children:[{id:2}]}
- * @param {Boolean} isFindOne 是否只找最先符合条件的一个
- * @param {Function} fn 查找回调函数，回调参数：item 节点，index节点当前兄弟节点中的索引，data 查找的数据树，函数返回true表示符合条件
- * @param {string} [field=children] 子级字段名称
- * @returns {Array|Object} 查找结果，isFindOne为true时返回Object， false时返回Array
- */
-export function traverse(data = [], isFindOne, fn, field = 'children') {
-  let result = []
-  data = Array.isArray(data) ? data : [data]
-  for (let i = 0, len = data.length; i < len; i++) {
-    const item = data[i],
-      checked = fn(item, i, data),
-      children = item[field]
-    if (checked) {
-      result.push(item)
-      if (isFindOne) break
-    }
-    if (children) {
-      const child = traverse(children, isFindOne, fn, field)
-      if (child) result = result.concat(child)
-    }
-  }
-  return isFindOne ? result[0] || null : result
-}
-
-/**
- * 查找节点在树结构数组的路径
- * @param {Array|Object} data 树数据数组， 如 {id:1, children:[{id:2}]}
- * @param {Function} fn 查找回调函数，回调参数：item 节点，index节点当前兄弟节点中的索引，data 查找的数据树，函数返回true表示符合条件
- * @param {string} [field=children] 子级字段名称
- * @return {Array} 节点路径数组
- */
-export function findPath(data, fn, field = 'children') {
-  let path = []
-  
-  function find(array, parent) {
-    parent && path.push(parent)
-    for (let i = 0, len = array.length; i < len; i++) {
-      const item = array[i],
-        checked = fn(item, i, array),
-        children = item[field]
-      // 找到，记录路径，退出循环
-      if (checked) {
-        path.push(item)
-        return true
-      }
-      if (children && children.length > 0) {
-        // 在子级找到，退出循环，自己没有，删除记录的父级
-        if (find(children, item)) {
-          return true
-        } else {
-          path.pop()
-        }
-      }
-    }
-  }
-  
-  find([].concat(data))
-  return path
-  
 }
 
 /**
@@ -200,4 +136,39 @@ export function guid() {
     const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   }).toUpperCase();
+}
+
+// 回显数据字典
+export function selectDictLabel(datas, value, fileType = { value: 'dictValue', label: 'dictLabel' }) {
+  var actions = [];
+  Object.keys(datas).some((key) => {
+    if (datas[key][fileType.value] == value) {
+      actions.push(datas[key][fileType.label]);
+      return true;
+    }
+  })
+  return actions.join('');
+}
+
+// 回显数据字典（字符串数组）
+export function selectDictLabels(datas, value, separator) {
+  var actions = [];
+  var currentSeparator = undefined === separator ? "," : separator;
+  var temp = value.split(currentSeparator);
+  Object.keys(value.split(currentSeparator)).some((val) => {
+    Object.keys(datas).some((key) => {
+      if (datas[key].dictValue == ('' + temp[val])) {
+        actions.push(datas[key].dictLabel + currentSeparator);
+      }
+    })
+  })
+  return actions.join('').substring(0, actions.join('').length - 1);
+}
+
+// 转换字符串，undefined,null等转化为""
+export function praseStrEmpty(str) {
+  if (!str || str == "undefined" || str == "null") {
+    return "";
+  }
+  return str;
 }

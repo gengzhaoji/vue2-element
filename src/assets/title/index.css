@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'youshe';
+    src: url('youshe.eot?rf5e0h');
+    src: url('youshe.eot?rf5e0h#iefix') format('embedded-opentype'),
+        url('youshe.ttf?rf5e0h') format('truetype'),
+        url('youshe.woff?rf5e0h') format('woff'),
+        url('youshe.svg?rf5e0h#icomoon') format('svg');
+}

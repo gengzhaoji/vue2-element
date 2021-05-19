@@ -1,7 +1,6 @@
 /**
  * 主题颜色更换工具函数, 通常在公共的组件或router-view入口组件加上该 mixin
  * @module utils/theme
- * @author 耿朝继
  * @example
  *
  * import themeMixin from '@/utils/theme'

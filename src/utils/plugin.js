@@ -1,86 +1,62 @@
-const MyPlugin = {};
+/**
+ * 全局插件配置资源（vue插件部分）
+ * @module utils/plugin
+ */
+import waves from './directives/waves'
+import hasRole from './directives/hasRole'
+import hasPermi from './directives/hasPermi'
+import preventReClick from './directives/preventReClick'
+import { getDicts } from "@/api/system/dict/data";
+import { selectDictLabel } from '@utils/util'
+import { clone } from '@utils/convert'
 
-MyPlugin.install = function (Vue, options) {
-    // 1. 添加全局方法或属性
-    Vue.myGlobalMethod = function () {
-        // 逻辑...
-    }
+export default {
+    install: function (Vue, options) {
+        /**
+         * 全局指令
+         */
+        Vue.directive('waves', waves)
+        Vue.directive('hasRole', hasRole)
+        Vue.directive('hasPermi', hasPermi)
+        Vue.directive('preventReClick', preventReClick)
+        /**
+         * 原型链全局挂载方法
+         */
+        Vue.prototype.selectDictLabel = selectDictLabel;
+        Vue.prototype.getDicts = getDicts;
 
-    // 2. 添加全局资源
-    Vue.directive('my-directive', {
-        bind(el, binding, vnode, oldVnode) {
-            // 逻辑...
-        }
-    })
+        Vue.prototype.msgSuccess = function (msg) {
+            this.$message({ showClose: true, message: msg, type: "success" });
+        };
 
-    // 3. 注入组件选项
-    Vue.mixin({
-        created: function () {
-            // 逻辑...
-        }
-    })
+        Vue.prototype.msgError = function (msg) {
+            this.$message({ showClose: true, message: msg, type: "error" });
+        };
 
-    // 全局弹窗函数
-    Vue.prototype.$dialog = function (title, content, opts) {
-        const vm = new Vue({
-            router: this.$router,
-            store: this.$store,
-            data: {
-                title: title,
-                visible: true
-            },
-            // 继承该组件
-            // extends: base,
-            methods: {
-                dismiss() {
-                    this.visible = false
-                    setTimeout(() => {
-                        document.body.removeChild(this.$el)
-                        opts && opts.on && opts.on.closed && opts.on.closed()
-                    }, 100)
-                },
-                close(res) {
-                    this.visible = false
-                    opts && opts.on && opts.on.closed && opts.on.closed(res ? res : '')
-                }
-            },
-            render(h) {
-                const dialogOption = {
-                    props: {
-                        ...(opts && opts.props || {})
-                    },
-                    on: {
-                        ...(opts && opts.on || {}),
-                        close: (b) => this.close(b)
-                    }
-                }
-                return h('el-dialog', {
-                    props: {
-                        title: this.title,
-                        center: true,
-                        visible: this.visible,
-                        'show-close': true,
-                        width: opts.width
-                    },
-                    on: {
-                        ['updata:visible']: () => this.close(),
-                        close: () => this.close(),
-                        closed: () => this.dismiss()
-                    }
-                }, [h('ElContent', {
-                    refInFor: true,
-                    ...dialogOption
-                })]);
-            },
-            components: {
-                //基本框架
-                // ElBase: base,
-                // 内容组件
-                ElContent: content
+        Vue.prototype.msgInfo = function (msg) {
+            this.$message.info(msg);
+        };
+
+        Vue.prototype.resetForm = function (refName) {
+            if (this.$refs[refName]) {
+                this.$refs[refName].resetFields()
             }
-        });
-        // 添加到文档流中
-        document.body.appendChild(vm.$mount().$el);
+        };
+
+        Vue.prototype.clone = clone;
+
+        Vue.prototype.$$confirm = function (item = "是否确认导出所有数据项？", title = '提示', confirmButtonText = '确定', cancelButtonText = '取消', type = 'warning') {
+            return new Promise((resolve, reject) => {
+                this.$confirm(item, title, {
+                    confirmButtonText,
+                    cancelButtonText,
+                    type
+                }).then(res => {
+                    resolve(res)
+                }).catch(err => {
+                    reject(err)
+                })
+            });
+        }
     }
 }
-export default MyPlugin

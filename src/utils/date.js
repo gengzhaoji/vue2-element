@@ -1,7 +1,6 @@
 /**
  * 日期处理模块
  * @module utils/date
- * @author 陈华春
  */
 
 /**
@@ -21,48 +20,74 @@
  * // 当前时间减少一天, 并转换格式
  *  date(new Date(), 'yyyy-MM-dd', {d: -1})
  */
-export default function date (dateStr, format, options) {
-  if (!dateStr) {
-    return (new Date())
-  }
+export default function date(dateStr = new Date(), format = 'yyyy-MM-dd hh:mm:ss', { y = 0, M = 0, d = 0, h = 0, m = 0, s = 0 } = {}) {
   let obj = typeof dateStr === 'string' ? new Date(dateStr.replace(/-/g, '/')) : dateStr
-  const setting = {
-    y: 0, // 年
-    M: 0, // 月
-    d: 0, // 日
-    h: 0, // 时
-    m: 0, // 分
-    s: 0 // 秒
-  }
-  Object.assign(setting, options || {})
 
-  obj = new Date(setting.y + obj.getFullYear(),
-    setting.M + obj.getMonth(),
-    setting.d + obj.getDate(),
-    setting.h + obj.getHours(),
-    setting.m + obj.getMinutes(),
-    setting.s + obj.getSeconds())
+  obj = new Date(y + obj.getFullYear(),
+    M + obj.getMonth(),
+    d + obj.getDate(),
+    h + obj.getHours(),
+    m + obj.getMinutes(),
+    s + obj.getSeconds());
+
   let o = {
     'M+': obj.getMonth() + 1,
     'd+': obj.getDate(),
     'h+': obj.getHours(),
+    'H+': obj.getHours(),
     'm+': obj.getMinutes(),
     's+': obj.getSeconds(),
     'q+': Math.floor((obj.getMonth() + 3) / 3),
     'S': obj.getMilliseconds()
   }
   if (format) {
-    if (/(y+)/.test(format)) {
-      format = format.replace(RegExp.$1,
-        RegExp.$1.length === 4 ? obj.getFullYear() : (obj.getFullYear() + '').substr(4 - RegExp.$1.length))
+    if (/(y+)/i.test(format)) {
+      format = format.replace(RegExp.$1, `${obj.getFullYear()}`.substr(4 - RegExp.$1.length));
     }
     for (var k in o) {
-      if (new RegExp('(' + k + ')').test(format)) {
-        format = format.replace(RegExp.$1, RegExp.$1.length === 1 ? o[k] : ('00' + o[k]).substr(('' + o[k]).length))
+      if (new RegExp(`(${k})`).test(format)) {
+        format = format.replace(RegExp.$1, RegExp.$1.length === 1 ? o[k] : (`00${o[k]}`).substr(`${o[k]}`.length))
       }
     }
     return format
   } else {
     return obj
+  }
+}
+
+/**
+ * 判断当前时间为、早班、中班、晚班
+ * @returns 
+ */
+export function compareTime() {
+  const day = date(new Date(), 'yyyy/MM/dd');
+  const nowTime = new Date().getTime();
+  // 早班时间为
+  if (nowTime < new Date(`${day} 07:59:59`).getTime() && nowTime > new Date(`${day} 00:00:00`).getTime()) {
+
+    return {
+      Time: 'nightPatrolTime',
+      Condition: 'nightPatrolCondition',
+      prop: 'nightPatrolStatus',
+      label: '夜班'
+    }
+  }
+  // 中班时间
+  if (nowTime < new Date(`${day} 15:59:59`).getTime() && nowTime > new Date(`${day} 08:00:00`).getTime()) {
+    return {
+      Time: 'dayPatrolTime',
+      Condition: 'dayPatrolCondition',
+      prop: 'dayPatrolStatus',
+      label: '白班'
+    }
+  }
+  // 晚班时间
+  if (nowTime < new Date(`${day} 23:59:59`).getTime() && nowTime > new Date(`${day} 16:00:00`).getTime()) {
+    return {
+      Time: 'middlePatrolTime',
+      Condition: 'middlePatrolCondition',
+      prop: 'middlePatrolStatus',
+      label: '中班'
+    }
   }
 }

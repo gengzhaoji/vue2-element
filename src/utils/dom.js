@@ -1,27 +1,26 @@
 /**
  * dom操作模块, 更多dom操作可以使用 element-ui/lib/util/dom
  * @module utils/dom
- * @author 陈华春
  */
 
 /**
  * 获取元素 offsetLeft
- * @deprecated 弃用，建议用 el.getBoundingClientRect().left
+ * @deprecated el.getBoundingClientRect().left
  * @param {HtmlElement} el DOM元素
  * @returns {Number}
  */
 export function offsetLeft(el) {
-  return el.offsetParent ? el.offsetLeft + offsetLeft(el.offsetParent) : el.offsetLeft
+  return el.getBoundingClientRect().left
 }
 
 /**
  * 获取元素 offsetTop
- * @deprecated 弃用，建议用 el.getBoundingClientRect().top
+ * @deprecated el.getBoundingClientRect().top
  * @param {HtmlElement} el DOM元素
  * @returns {Number}
  */
 export function offsetTop(el) {
-  return el.offsetParent ? el.offsetTop + offsetTop(el.offsetParent) : el.offsetTop
+  return el.getBoundingClientRect().top
 }
 
 /**
@@ -35,13 +34,13 @@ export function getScroll(target, top) {
   if (target === window) {
     const prop = top ? 'pageYOffset' : 'pageXOffset'
     const method = top ? 'scrollTop' : 'scrollLeft'
-    
+
     let ret = target[prop]
-    
+
     if (typeof ret !== 'number') {
       ret = window.document.documentElement[method]
     }
-    
+
     return ret
   } else {
     const method = top ? 'scrollTop' : 'scrollLeft'
@@ -51,20 +50,20 @@ export function getScroll(target, top) {
 
 /**
  * 获取元素的 offset
- * @deprecated 弃用，建议用 el.getBoundingClientRect()
+ * @deprecated  el.getBoundingClientRect()
  * @param {HtmlElement} element DOM元素
  * @returns {Object} offset {left, top}
  */
 export function getOffset(element) {
   const rect = element.getBoundingClientRect()
-  
+
   const scrollTop = getScroll(window, true)
   const scrollLeft = getScroll(window)
-  
+
   const docEl = window.document.body
   const clientTop = docEl.clientTop || 0
   const clientLeft = docEl.clientLeft || 0
-  
+
   return {
     top: rect.top + scrollTop - clientTop,
     left: rect.left + scrollLeft - clientLeft
@@ -91,15 +90,15 @@ export function scrollTop(el, from = 0, to, duration = 500) {
   }
   const difference = Math.abs(from - to)
   const step = Math.ceil(difference / duration * 50)
-  
+
   function scroll(start, end, step) {
     if (start === end) return
-    
+
     let d = (start + step > end) ? end : start + step
     if (start > end) {
       d = (start - step < end) ? end : start - step
     }
-    
+
     if (el === window) {
       window.scrollTo(d, d)
     } else {
@@ -107,7 +106,7 @@ export function scrollTop(el, from = 0, to, duration = 500) {
     }
     window.requestAnimationFrame(() => scroll(d, end, step))
   }
-  
+
   scroll(from, to, step)
 }
 

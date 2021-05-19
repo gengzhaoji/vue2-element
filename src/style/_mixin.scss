@@ -50,8 +50,8 @@
   box-sizing: border-box;
 }
 
-// 线性渐变背景色
-@mixin linear-gradient($from, $to) {
+// 线性渐变背景色 上下
+@mixin linear-gradient-tb($from, $to) {
   /* Fallback for sad browsers */
   background-color: $to;
   /* Mozilla Firefox */
@@ -68,8 +68,23 @@
   background-image: linear-gradient($from, $to);
 }
 
+// 线性渐变背景色 左右
+@mixin linear-gradient-lr($from, $to) {
+  /* Fallback for sad browsers */
+  background-color: $to;
+  /* Mozilla Firefox */
+  background-image: -moz-linear-gradient(left, $from, $to);
+  /* Opera */
+  background-image: -o-linear-gradient(left, $from, $to);
+  /* WebKit (Chrome 11+) */
+  background-image: -webkit-linear-gradient(left, $from, $to);
+  /* IE10 */
+  background-image: -ms-linear-gradient(left, $from, $to);
+  /* W3C */
+  background-image: linear-gradient(left, $from, $to);
+}
+
 @mixin inline-block {
   display: inline-block;
   vertical-align: top;
 }
-

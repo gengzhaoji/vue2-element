@@ -1,7 +1,6 @@
 /**
  * 切换皮肤mixin
  * @module utils/skin
- * @author chenhuachun@xdh.net.cn
  * @example
  *
  * // 需要在src/style/skins 目录下建立皮肤scss文件，并在src/style/index.scss引入

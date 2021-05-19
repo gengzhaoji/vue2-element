@@ -5,7 +5,7 @@
     :data="tableData"
     v-on="$listeners"
     v-bind="tableOptions"
-    height='100'
+    :size='$attrs.size || $store.getters.size'
   >
     <template v-for="(col, index) in tableColumns">
       <!-- 定义 index、selection 类型的列-->
@@ -36,8 +36,24 @@
       <el-table-column
         v-else
         v-bind="col"
+        :align='col.align || ["操作"].includes(col.label) ? "center" : "left"'
         :key="index"
       >
+        <template
+          slot="header"
+          slot-scope="scope"
+        >
+          <slot
+            :name='col.prop + "_header"'
+            :row="scope.row"
+            :$index="scope.$index"
+            :column="tableColumns[index]"
+            :columnIndex="index"
+            :col='col'
+          >
+            {{col.label}}
+          </slot>
+        </template>
         <template
           slot-scope="scope"
           v-if="!col.type"
@@ -52,8 +68,8 @@
             {{scope.row[col.prop]}}
           </slot>
         </template>
-
       </el-table-column>
+
     </template>
 
     <!--暴露 el-table append 插槽-->
@@ -76,10 +92,6 @@ import ElTable from "element-ui/lib/table";
 import Sortable from "sortablejs";
 import { debounce } from "@/utils/util";
 import { insertAfter } from "@/utils/dom";
-
-const noop = function() {
-  return Promise.resolve();
-};
 
 /**
  * XdhTable 表格组件
@@ -117,7 +129,12 @@ export default {
     },
     openFilter: {
       type: Function,
-      default: noop
+      default: function() {
+        return Promise.resolve();
+      }
+    },
+    height: {
+      default: 10
     }
   },
   data() {
@@ -143,7 +160,10 @@ export default {
       this.tableData = val;
     },
     columns(val) {
-      this.tableColumns = val;
+      this.tableColumns = [];
+      this.$nextTick(() => {
+        this.tableColumns = val;
+      });
       const data = this.tableData;
       this.tableData = [];
       this.$nextTick(() => {
@@ -329,13 +349,6 @@ export default {
   }
   .sortable-ghost.xdh-table--not-drag {
     background: transparent;
-  }
-  &.el-table th > .cell,
-  &.el-table--border th:first-child .cell {
-    padding-left: 0;
-    padding-bottom: 0;
-    margin: 0 10px;
-    width: calc(100% - 20px);
   }
   &-filter {
     &__label {

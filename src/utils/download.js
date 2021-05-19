@@ -1,7 +1,6 @@
 /**
  * 文件下载模块
  * @module utils/download
- * @author 陈华春
  */
 
 /**
@@ -36,6 +35,31 @@ export function stringToBlob(str) {
     new Blob([str], { type: 'application/octet-stream' })
   );
 }
+
+/**
+ * 下载Blob数据
+ * @param str 字符串
+ * @example
+ *  let json = {name: '张三'};
+ *  downloadByData(null, 'name.json', stringToBlob(JSON.stringify(json)))
+ */
+export function downloadBlob(data, name) {
+  const content = data
+  const blob = new Blob([content])
+  if ('download' in document.createElement('a')) {
+    const elink = document.createElement('a')
+    elink.download = name
+    elink.style.display = 'none'
+    elink.href = URL.createObjectURL(blob)
+    document.body.appendChild(elink)
+    elink.click()
+    URL.revokeObjectURL(elink.href)
+    document.body.removeChild(elink)
+  } else {
+    navigator.msSaveBlob(blob, filename)
+  }
+}
+
 
 /**
  * base64数据转文件下载

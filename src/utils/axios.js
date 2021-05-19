@@ -1,28 +1,36 @@
 /**
  *  Axios 实例, ajax请求底层方法
  *  官方文档 [https://github.com/axios/axios]{@link https://github.com/axios/axios}
- *  @author 耿朝继
  *  @module utils/axios
  */
 
 import axios from 'axios'
+
+import date from '@utils/date'
+
 // vuex数据
 import store from '@/store'
-// 路由跳转
-import router from '../router'
+
 // API_HOST
 import { API_HOST, AJAX_SUCCESS } from '@/config'
 
-import { Message } from 'element-ui'
+import { Notification, Message } from 'element-ui'
+
+// 请求错误自定义
+const errorCode = {
+  '401': '认证失败，无法访问系统资源',
+  '403': '当前操作没有权限',
+  '404': '访问资源不存在',
+  'default': '系统未知错误,请反馈给管理员'
+};
+
+// 请求存储
+const axiosPromiseArr = [];
+
 /**
- * 取消请求
- * @type {CancelTokenSource}
- * @example
- *
- * import {source} from '@/utils/axios'
- * source.cancel('描述文字....')
+ * 白名单
  */
-export const source = axios.CancelToken.source()
+const whiteList = ['/file/upload', '/file/downloadFile']
 
 /**
  * Axios实例化参数选项对象
@@ -34,99 +42,195 @@ export const source = axios.CancelToken.source()
  * @property {number} maxContentLength 限制最大发送内容长度，默认：-1 不限制
  * @property {strin} cancelToken 取消请求
  */
-const config = {
+const service = axios.create({
   headers: {
     'Content-Type': 'application/json;charset=UTF-8'
   },
   timeout: 0,
-  withCredentials: true,
+  withCredentials: false,
   responseType: 'json',
   maxContentLength: -1,
-  cancelToken: source.token,
-  baseURL: API_HOST
-}
-
-const service = axios.create(config)
+  baseURL: process.env.VUE_APP_BASE_API || API_HOST
+})
 
 /**
  * 在请求发送数据之前，对发送数据进行转换
  */
 service.interceptors.request.use(config => {
-  // 每次发送请求之前判断是否存在token，如果存在，则统一在http请求的header都加上token，不用每次请求都手动添加了
-  // 即使本地存在token，也有可能token是过期的，所以在响应拦截器中要对返回状态进行判断
-  const token = store.state.token;
-  token && (config.headers.Authorization = token);
-  return config;
-},
-  error => {
-    Message.error({
-      message: '加载超时'
-    })
-    return Promise.error(error);
+  // 是否需要设置 token
+  const isToken = (config.headers || {}).isToken === false;
+  if (store.getters.token && !isToken) {
+    config.headers['Authorization'] = 'Bearer ' + store.getters.token// 让每个请求携带自定义token 请根据实际情况自行修改
   }
-)
+  // get请求映射params参数
+  if (config.method === 'get' && config.params) {
+    let url = config.url + '?';
+    for (const propName of Object.keys(config.params)) {
+      const value = config.params[propName];
+      var part = encodeURIComponent(propName) + "=";
+      if (value !== null && typeof (value) !== "undefined") {
+        if (typeof value === 'object') {
+          for (const key of Object.keys(value)) {
+            let params = propName + '[' + key + ']';
+            var subPart = encodeURIComponent(params) + "=";
+            url += subPart + encodeURIComponent(value[key]) + "&";
+          }
+        } else {
+          url += part + encodeURIComponent(value) + "&";
+        }
+      }
+    }
+    url = url.slice(0, -1);
+    delete config.params;
+    config.url = url;
+  }
+  /**
+ * 请求未完成时保存取消的cancelToken
+ */
+  config.cancelToken = new axios.CancelToken(cancel => {
+    // 判断是否重复切不在白名单中
+    const repeat = axiosPromiseArr.some(item => item.url === config.url);
+    if (repeat && !whiteList.includes(config.url)) {
+      cancel();
+    } else {
+      axiosPromiseArr.push({ url: config.url, cancel })
+    }
+  })
+
+  return config
+}, error => {
+  Message.error({
+    message: '加载超时'
+  })
+  return Promise.reject(error);
+})
 
 // 响应拦截器
-service.interceptors.response.use(
-  res => {
-    if (res.status === AJAX_SUCCESS) {
-      return Promise.resolve(res.data);
-    } else {
-      return Promise.reject(res.data);
+service.interceptors.response.use(res => {
+  // 请求成功后从正在进行的请求数组中删除
+  axiosPromiseArr.forEach((item, index) => {
+    if (item.url === res.config.url.replace(res.config.baseURL, '')) {
+      delete axiosPromiseArr[index];
     }
-  },
+  })
+  // 未设置状态码则默认成功状态
+  const code = res.data && res.data.code || AJAX_SUCCESS;
+  // 获取错误信息
+  const msg = errorCode[code] || res.data && res.data.msg || errorCode['default']
+  if (code === 500 && msg === "登录状态已过期") {
+    store.dispatch('LogOut').then(() => {
+      window.location.reload();
+    })
+    cancelFn();
+  } else if (code === 500) {
+    Message({
+      message: msg,
+      type: 'error'
+    })
+    return Promise.reject(new Error(msg))
+  } else if (code !== 200) {
+    Notification.error({
+      title: msg
+    })
+    return Promise.reject('error')
+  } else {
+    return Promise.resolve(res.data)
+  }
+},
   // 服务器状态码不是200的情况    
   error => {
-    if (error.response.status) {
-      switch (error.response.status) {
-        // 401: 未登录                
-        // 未登录则跳转登录页面，并携带当前页面的路径                
-        // 在登录成功后返回当前页面，这一步需要在登录页操作。                
-        case 401:
-          router.replace({
-            path: '/login',
-            query: { redirect: router.currentRoute.fullPath }
-          });
-          break;
-        // 403 token过期                
-        // 登录过期对用户进行提示                
-        // 清除本地token和清空vuex中token对象                
-        // 跳转登录页面                
-        case 403:
-          Message.error({
-            message: '登录过期，请重新登录'
-          });
-          // // 清除token                    
-          // localStorage.removeItem('token');
-          // store.commit('loginSuccess', null);
-          // 跳转登录页面，并将要浏览的页面fullPath传过去，登录成功后跳转需要访问的页面
-          setTimeout(() => {
-            router.replace({
-              path: '/login',
-              query: {
-                redirect: router.currentRoute.fullPath
-              }
-            });
-          }, 1000);
-          break;
-        // 404请求不存在                
-        case 404:
-          Message.error({
-            message: '网络请求不存在'
-          });
-          break;
-        // 其他错误，直接抛出错误提示                
-        default:
-          Message.error({
-            message: error.response.data.message
-          });
+    let { message } = error;
+    if (message) {
+      if (message == "Network Error") {
+        message = "后端接口连接异常";
+      } else if (message.includes("timeout")) {
+        message = "系统接口请求超时";
+      } else if (message.includes("Request failed with status code")) {
+        message = "系统接口" + message.substr(message.length - 3) + "异常";
       }
-      return Promise.reject(error.response);
+      Message({
+        message: message,
+        type: 'error',
+        duration: 5 * 1000
+      })
+      cancelFn();
     }
+    return Promise.reject(error)
   }
 );
+/**
+ * 请求系统错误时 取消所有正在进行的请求函数
+ * @returns 
+ */
+export function cancelFn() {
+  axiosPromiseArr.forEach((el, index) => {
+    // 中止请求
+    el.cancel();
+    // 重置axiosPromiseArr
+    delete axiosPromiseArr[index];
+  })
+}
+
+/**
+ * 通用下载方法
+ */
+export function download(url, params, filename, currency = true) {
+  let headers;
+  if (currency) {
+    headers = {
+      transformRequest: [(params) => {
+        return tansParams(params)
+      }],
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      responseType: 'blob'
+    }
+  } else {
+    headers = {
+      responseType: 'blob'
+    }
+  }
+  return service.post(url, params, headers).then((data) => {
+    const content = data;
+    const blob = new Blob([content]);
+    if ('download' in document.createElement('a')) {
+      const elink = document.createElement('a')
+      elink.download = currency ? `${date(new Date(), 'yyyy-MM-dd hh:mm:ss')}-${filename}` : filename
+      elink.style.display = 'none'
+      elink.href = URL.createObjectURL(blob)
+      document.body.appendChild(elink)
+      elink.click()
+      URL.revokeObjectURL(elink.href)
+      document.body.removeChild(elink)
+    } else {
+      navigator.msSaveBlob(blob, currency ? `${date(new Date(), 'yyyy-MM-dd hh:mm:ss')}-${filename}` : filename)
+    }
+    Message({
+      message: '导出成功！',
+      type: 'success'
+    })
+  }).catch((r) => {
+    Message({
+      message: '导出失败！',
+      type: 'error'
+    })
+  })
+}
 
 
+/**
+ * 参数拼接
+ */
+export function tansParams(params) {
+  let result = ''
+  Object.keys(params).forEach((key) => {
+    if (!Object.is(params[key], undefined) && !Object.is(params[key], null) && !Object.is(JSON.stringify(params[key]), '{}')) {
+      result += encodeURIComponent(key) + '=' + encodeURIComponent(params[key]) + '&'
+    }
+  })
+  return result
+}
 /**
  * Axios 实例
  * @example
@@ -155,33 +259,37 @@ service.interceptors.response.use(
  *  axios.patch(url[, data[, config]])
  */
 
- /**
- * 
- * @param {object} options 
- * 请求配置参数
- * url请求地址必须传
- * method请求方法默认为get方法
- * data请求参数
- */
+/**
+* 
+* @param {object} options 
+* 请求配置参数
+* url请求地址必须传
+* method请求方法默认为get方法
+* data请求参数
+*/
 export default function (options) {
   // 处理默认参数，传参和默认参数合并
-  let config = Object.assign({ method: 'get' }, options || {})
+  let config = Object.assign({ method: 'get' }, options || {});
 
   // 必须要传入url
   if (!config.url) {
     throw new Error('ajax url is required!')
   }
 
-  let { url, method, data } = config
+  let { url, method, data } = config;
 
-  delete config.url
-  delete config.method
-  delete config.data
+  if (method === 'get') {
+    data = Object.assign({ orderByColumn: 'createTime', isAsc: 'desc' }, data || {});
+  }
+
+  delete config.url;
+  delete config.method;
+  delete config.data;
 
   const http = ['get', 'head', 'delete'].includes(method) ? service[method](url, {
     ...config,
     params: data
-  }) : service[method](url, data, config)
+  }) : service[method](url, data, config);
 
   return http
-} 
+}

@@ -1,173 +1,321 @@
 <template>
-  <div class="layout">
+  <div id="layout">
     <el-container>
       <!--头部-->
-      <el-header class="header">
-        <div class="pull-right padding-right-10">
-          <el-dropdown>
-            <i
-              class="el-icon-setting"
-              style="margin-right: 15px color: #fff;"
-            ></i>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>查看</el-dropdown-item>
-              <el-dropdown-item>新增</el-dropdown-item>
-              <el-dropdown-item>删除</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <span>王小虎</span>
+      <el-header
+        class="header"
+        height='80px'
+      >
+        <div
+          class="title"
+          :style='{width : aside_width}'
+        >
+          <transition name="sidebarLogoFade">
+            <div
+              v-if="collapse"
+              key="collapse"
+            >
+              <img
+                class="juzhong_transform"
+                src="@/assets/img/logo.png"
+                alt=""
+              >
+            </div>
+            <div
+              v-else
+              key="expand"
+            >
+              <img
+                src="@/assets/img/logo.png"
+                alt=""
+              >
+              <span class="margin-left-10">富全矿山</span>
+            </div>
+          </transition>
+        </div>
+        <div class="f1 flex">
+          <i
+            class=""
+            @click.prevent="collapse = !collapse"
+            :class="[collapse?'icon-menu2':'icon-menu', 'btn']"
+          ></i>
+          <div class="message f1">
+            <div class="li">
+              <el-avatar
+                class="tou"
+                :src="$store.getters.avatar"
+              ></el-avatar>
+              <el-dropdown style="vertical-align: top;">
+                <span class="el-dropdown-link">
+                  {{$store.getters.user.userName}}
+                  <i class="el-icon-caret-bottom el-icon--right"></i>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item @click.native="$router.push({path:'/user/profile'})">个人中心</el-dropdown-item>
+                  <el-dropdown-item
+                    @click.native="logout"
+                    divided
+                  >退出登陆</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+          </div>
         </div>
       </el-header>
-      <!--中部-->
       <el-container>
-        <!--菜单栏-->
         <el-aside
-          :width='aside_width'
-          style="transition: all 0.2s;"
+          :width="aside_width"
+          :class="{'collapse':!collapse}"
         >
-          <div
-            class="btn"
-            @click="collapse = !collapse"
-          >
-            <i :class="[collapse?'el-icon-s-fold':'el-icon-s-unfold']"></i>
-          </div>
-          <xdh-menu
+          <xdh-menu-toggle
+            class="menu"
             :data="menus"
             :collapse="collapse"
-            :default-active="$route.path"
+            :default-active="activeMenu"
+            @open="navSelect"
             @select="navSelect"
-            :collapse-transition="false"
-            background-color="#1b82c7"
-            text-color="#fff"
-            active-text-color="#ffd04b"
-          ></xdh-menu>
+            unique-opened
+          ></xdh-menu-toggle>
         </el-aside>
-        <!--内容区-->
-        <el-main>
-          <transition name="el-zoom-in-top">
-            <keep-alive>
-              <router-view v-if="$route.meta.keepAlive"></router-view>
-            </keep-alive>
-          </transition>
-          <transition name="el-zoom-in-top">
-            <router-view v-if="!$route.meta.keepAlive"></router-view>
-          </transition>
-        </el-main>
+
+        <div class="main">
+          <div class="content">
+            <!--面包屑导航-->
+            <div class="padding-10">
+              <breadcrumb
+                id="breadcrumb-container"
+                class="breadcrumb-container"
+              />
+            </div>
+            <div style='height: calc(100% - 56px)'>
+              <!--内容区-->
+              <transition
+                name="fade-transform"
+                mode="out-in"
+              >
+                <keep-alive>
+                  <router-view
+                    v-if="$route.meta.keepAlive"
+                    :key="$route.path"
+                  ></router-view>
+                </keep-alive>
+              </transition>
+              <transition
+                name="fade-transform"
+                mode="out-in"
+              >
+                <router-view
+                  v-if="!$route.meta.keepAlive"
+                  :key="$route.path"
+                ></router-view>
+              </transition>
+            </div>
+          </div>
+        </div>
       </el-container>
     </el-container>
   </div>
 </template>
  
 <script>
+import { treeToArray } from "@utils/convert";
+import { menus } from "@/config/menus";
+import store from "@/store";
+
 export default {
   name: "layout",
   components: {
-    XdhMenu: () => import("@/components/xdh-menu/xdh-menu.vue")
+    XdhMenuToggle: () => import("@com/xdh-menu-toggle"),
+    Breadcrumb: () => import("@com/Breadcrumb")
   },
+  inject: ["screenWidth"],
   data() {
     return {
-      // 菜单列表
-      menus: [
-        {
-          id: "/",
-          text: "首页",
-          icon: "el-icon-tickets",
-          path: "/"
-        },
-        {
-          id: "/ceshi",
-          text: "测试页面",
-          icon: "el-icon-tickets",
-          path: "/ceshi"
-        }
-      ],
-      collapse: false
+      collapse: false,
+      activeName: "通知",
+      tabs: [3, 2, 3]
     };
   },
   computed: {
+    width: function() {
+      let width = this.screenWidth() * 0.2;
+      if (width < 220) {
+        width = 220;
+      } else if (width > 300) {
+        width = 300;
+      }
+      return width;
+    },
     aside_width: function() {
-      return this.collapse ? "65px" : "200px";
+      return this.collapse ? "65px" : `${this.width + 1}px`;
+    },
+    activeMenu() {
+      const { meta, path } = this.$route;
+      if (meta.activeMenu) {
+        return meta.activeMenu;
+      }
+      return path.split("-")[0];
+    },
+    menus() {
+      // return process.env.VUE_APP_TI !== "" ? this.$store.getters.menu : menus;
+      return menus;
     }
   },
-  watch: {},
-  created() {},
-  mounted() {},
-  destroyed() {},
   methods: {
+    logout() {
+      this.$confirm("确定注销并退出系统吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        this.$store.dispatch("LogOut").then(() => {
+          location.href = "/";
+        });
+      });
+    },
     navSelect(id, path) {
       this.$router.push(id);
+    },
+    handleClick(tab, event) {
+      console.log(tab, event);
     }
   }
 };
 </script>
- 
-<style scoped lang = "scss">
-$--color-background: rgba(142, 207, 249, 0.72);
-.layout {
+
+<style lang="scss" scoped>
+$--line-height: 80px;
+.sidebarLogoFade-enter-active {
+  transition: opacity 1.5s;
+}
+
+.sidebarLogoFade-enter,
+.sidebarLogoFade-leave-to {
+  opacity: 0;
+}
+
+#layout {
   height: 100%;
   width: 100%;
   display: flex;
+
   .header {
-    background-color: #1b82c7;
-    line-height: 60px;
-    height: 60px;
-    pull-right {
-      color: #fff
-    }
-  }
-  .el-aside {
-    background-color: #1b82c7;
-    .btn {
-      color: #fff;
-      height: 40px;
-      width: 100%;
-      line-height: 40px;
-      background: #1b7cbe;
-      cursor: pointer;
+    display: flex;
+    padding: 0;
+    border-bottom: 1px solid grey;
+    box-shadow: 0px 0px 5px grey;
+    background: #001629;
+    .title {
+      transition: all 0.3s;
       text-align: center;
-      i {
-        font-size: 22px;
-        line-height: 40px;
+      color: #ffffff;
+      height: $--line-height;
+      line-height: $--line-height;
+      letter-spacing: 5px;
+      > div {
+        position: relative;
+        height: 100%;
+        img {
+          height: 35px;
+          vertical-align: text-bottom;
+        }
+        .margin-left-10 {
+          font-size: 38px;
+          font-weight: 100;
+          font-family: "youshe";
+          display: inline-block;
+        }
       }
     }
-    /deep/.el-submenu__title {
-      font-size: 16px;
-      &:hover {
-        background-color: $--color-background !important;
+    .f1 {
+      .btn {
+        font-size: 26px;
+        color: #1890ff;
+        line-height: $--line-height;
+        cursor: pointer;
       }
-      i {
-        color: #fff;
-        font-size: 18px;
-      }
-    }
-    /deep/.el-submenu .el-menu-item {
-      padding: 0 0 0 45px;
-      height: 40px;
-      line-height: 40px;
-    }
-    /deep/.el-menu-item {
-      color: #fff;
-      &.is-active,
-      &:hover,
-      &:focus {
-        background-color: $--color-background !important;
-      }
-      [class^="el-icon-"] {
-        color: #fff;
+      .message {
+        flex: 1 0 auto;
+        width: 0;
+        height: $--line-height;
+        text-align: right;
+        .li {
+          .icon-bell {
+            color: #ffffff;
+            font-size: 20px;
+          }
+          padding: 0 10px;
+          display: inline-block;
+          cursor: pointer;
+        }
+        .li:last-child {
+          line-height: $--line-height;
+          .tou {
+            transform: translate(0, 15px);
+            margin-right: 5px;
+          }
+          /deep/.el-dropdown-link {
+            font-size: 20px;
+            color: #ffffff;
+          }
+        }
       }
     }
   }
-}
-</style>
-<style scoped lang="scss">
-$--color-background: rgba(142, 207, 249, 0.72);
-.el-menu-item {
-  color: #fff;
-  height: 40px;
-  line-height: 40px;
-  &.is-active,
-  &:hover {
-    background-color: $--color-background !important;
+
+  /deep/.el-aside {
+    overflow-x: hidden;
+    border-right: 1px solid grey !important;
+    box-shadow: 0px 5px 5px grey;
+    z-index: 1;
+  }
+  .xdh-menu-toggle {
+    position: relative;
+    height: calc(100% - 40px);
+  }
+  .menu {
+    /deep/.el-menu {
+      background-color: transparent;
+    }
+
+    /deep/.el-menu-item,
+    /deep/.el-submenu__title {
+      border-left: 4px solid transparent;
+      transition: border-left 0.2s;
+    }
+    /deep/div[class="el-submenu__title"]:hover {
+      @include linear-gradient-lr(#e8f4fe, rgba(232, 244, 254, 0.1));
+    }
+    /deep/.el-menu-item.is-active {
+      color: #1890ff;
+      border-left: 4px solid #1890ff;
+      @include linear-gradient-lr(#e8f4fe, rgba(232, 244, 254, 0.1));
+    }
+    /deep/.el-submenu.is-active {
+      @include linear-gradient-lr(#e8f4fe, rgba(232, 244, 254, 0.1));
+    }
+    /deep/.el-menu-item:focus,
+    /deep/.el-menu-item:hover {
+      @include linear-gradient-lr(#e8f4fe, rgba(232, 244, 254, 0.1));
+    }
+    /deep/.is-opened {
+      background: #f6f8fb !important;
+    }
+  }
+  .main {
+    padding: 0px;
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+    width: 0;
+    position: relative;
+    .content {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+    }
   }
 }
 </style>
