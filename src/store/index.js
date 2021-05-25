@@ -1,12 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import VuexPersistence from 'vuex-persist'
+import VuexPersistence from 'vuex-persistedstate'
 import getters from './getters'
-/**vuex持续存储插件 */
-const vuexLocal = new VuexPersistence({
-  storage: window.localStorage,
-  modules: ['user', 'menu']
-})
 Vue.use(Vuex)
 
 const modulesFiles = require.context('./modules', true, /\.js$/);
@@ -21,5 +16,22 @@ const modules = modulesFiles.keys().reduce((modules, modulePath) => {
 export default new Vuex.Store({
   modules,
   getters,
-  plugins: [vuexLocal.plugin]
+  plugins: [
+    VuexPersistence({
+      storage: window.localStorage,
+      // 配置缓存的内容
+      reducer(val) {
+        return {
+          user: {
+            token: val.user.token,
+            size: val.user.size,
+          },
+          guarder: {
+            moduleName: val.guarder.moduleName,
+            indexPath: val.guarder.indexPath,
+          }
+        }
+      }
+    })
+  ]
 })
