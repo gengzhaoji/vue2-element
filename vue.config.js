@@ -27,7 +27,7 @@ module.exports = {
   // 生产环境是否生成 sourceMap 文件
   productionSourceMap: false,
   // 转译不能兼容ie的插件中的es6写法
-  transpileDependencies: ['vuex-persist', 'jsencrypt'],
+  transpileDependencies: ['jsencrypt'],
   // css相关配置
   css: {
     // 是否使用css分离插件
