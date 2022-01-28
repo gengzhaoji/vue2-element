@@ -3,13 +3,10 @@
   "version": "0.1.1",
   "private": true,
   "scripts": {
+    "dev": "vue-cli-service serve --mode",
+    "start": "vue-cli-service serve --mode",
     "build": "vue-cli-service build",
-    "fix": "node build/index.js",
-    "serve": "vue-cli-service serve --open",
-    "dev": "vue-cli-service serve --open",
-    "start": "vue-cli-service serve --open",
-    "dev:feng": "vue-cli-service serve --mode feng --open",
-    "dev:jia": "vue-cli-service serve --mode jia --open"
+    "coder": "node coder/index.js"
   },
   "dependencies": {
     "axios": "^0.18.0",
